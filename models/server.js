@@ -19,7 +19,8 @@ class Server {
         this.paths = {
 
             usuarios:   '/api/usuarios',
-            tiendas:   '/api/tiendas',
+            tiendas:    '/api/tiendas',
+            creditos:   '/api/creditos',
             
         }
 
@@ -58,6 +59,7 @@ class Server {
         
         this.app.use( this.paths.usuarios, require('../routes/usuarios'));
         this.app.use( this.paths.tiendas, require('../routes/tiendas'));
+        this.app.use( this.paths.creditos, require('../routes/creditos'));
         
     }
 

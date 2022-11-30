@@ -28,7 +28,6 @@ const obtenerTiendas = async (req = request , res = response) => {
 const obtenerTienda = async (req = request , res = response) => {
     const {id}= req.params;
     const tienda = await Tienda.findById(id)
-                                      .populate('usuario', 'nombre');
     //const usuarioAutenticado = req.usuario
     res.json(tienda);
 }
@@ -37,12 +36,10 @@ const obtenerTienda = async (req = request , res = response) => {
 const crearTienda = async (req, res = response)=>{
 
     const nombre= req.body.nombre.toUpperCase();
-    const usuarioId=req.body.usuarioId
 
     const tiendaDB= await Tienda.findOne({nombre});
-    const usuarioDB= await Tienda.findOne({usuarioId});
-    console.log(usuarioDB)
-    if(tiendaDB && usuarioDB ){
+
+    if(tiendaDB){
         return res.status(400).json({
             msg : `La tienda ${tiendaDB.nombre} ya existe`
         })
@@ -50,7 +47,7 @@ const crearTienda = async (req, res = response)=>{
     //Generar la data a guardar
     const data ={
         nombre,
-        usuario: req.body.usuarioId
+        usuario: req.body.usuarioID
     }
 
     const tienda = new Tienda(data);
@@ -58,24 +55,21 @@ const crearTienda = async (req, res = response)=>{
     await tienda.save();
 
     res.status(201).json(tienda);
-
-
 }
 
 //actuallizarCategoria
 
 const actualizarTienda =  async (req, res = response)=> {
     const {id} = req.params;
-    const {estado, usuario, ...data} = req.body;
-    data.nombre = data.nombre.toUpperCase();
-    data.usuario = req.usuario._id;
+    let {tienda, cantidad} = req.body;
+    nombre = nombre.toUpperCase();
 
-    const tienda = await Tienda.findByIdAndUpdate(id, data, {new: true});
+    const credito = await Credito.findByIdAndUpdate(id, {nombre, cantidad}, {new: true});
     
-res.json(tienda);
+res.json(credito);
 }
 
-//borrarCategoria -estado-false
+//borrarTienda -estado-false
 
 const borrarTienda =  async (req, res = response)=> {
 
@@ -84,9 +78,9 @@ const borrarTienda =  async (req, res = response)=> {
     //Borrar físicamente
    // const tienda = await Tienda.findByIdAndDelete(id);
 
-    const tienda = await Tienda.findByIdAndUpdate(id, {estado:false}, {new: true});
+   const credito = await Credito.findByIdAndUpdate(id, {estado:false}, {new: true});
     //const usuarioAutenticado = req.usuario
-    res.json(tienda);
+    res.json(credito);
   }
 
 

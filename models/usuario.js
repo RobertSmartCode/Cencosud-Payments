@@ -9,7 +9,8 @@ const UsuarioSchema = Schema({
         type : String,
         required : [true, 'El correo es obligatorio'],
         unique : true
-    },
+    }
+   
 });
 
 UsuarioSchema.methods.toJSON = function(){

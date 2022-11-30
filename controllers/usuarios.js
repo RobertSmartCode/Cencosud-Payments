@@ -1,7 +1,5 @@
 const {response, request} = require('express');
 
-
-
 const Usuario = require('../models/usuario');
 
 const usuariosGet = async (req = request, res = response) => {

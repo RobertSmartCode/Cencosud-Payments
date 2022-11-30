@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
 
-const TiendaSchema = Schema({
+const CreditoSchema = Schema({
     estado: {
         type : Boolean,
         default: true,
@@ -24,11 +24,11 @@ const TiendaSchema = Schema({
     }
 });
 
-TiendaSchema.methods.toJSON = function(){
+CreditoSchema.methods.toJSON = function(){
     const {__v, _id, estado, ...data} = this.toObject();
     data.uid = _id;
     return data;
 }
 
 
-module.exports = model( 'Tienda', TiendaSchema );
+module.exports = model( 'Credito', CreditoSchema );
