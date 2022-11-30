@@ -1,6 +1,30 @@
 const { response, request } = require("express");
 
-const {Tienda } = require("../models");
+const {Tienda} = require("../models");
+
+
+const crearTienda = async (req, res = response)=>{
+
+    const nombre= req.body.nombre.toUpperCase();
+
+    const tiendaDB= await Tienda.findOne({nombre});
+
+    if(tiendaDB){
+        return res.status(400).json({
+            msg : `La tienda ${tiendaDB.nombre} ya existe`
+        })
+    }
+    //Generar la data a guardar
+    const data ={
+        nombre
+    }
+
+    const tienda = new Tienda(data);
+    //Guardar en BD
+    await tienda.save();
+
+    res.status(201).json(tienda);
+}
 
 
 //obtenerTiendas - paginado -total -populate
@@ -33,40 +57,17 @@ const obtenerTienda = async (req = request , res = response) => {
 }
 
 
-const crearTienda = async (req, res = response)=>{
-
-    const nombre= req.body.nombre.toUpperCase();
-
-    const tiendaDB= await Tienda.findOne({nombre});
-
-    if(tiendaDB){
-        return res.status(400).json({
-            msg : `La tienda ${tiendaDB.nombre} ya existe`
-        })
-    }
-    //Generar la data a guardar
-    const data ={
-        nombre,
-        usuario: req.body.usuarioID
-    }
-
-    const tienda = new Tienda(data);
-    //Guardar en BD
-    await tienda.save();
-
-    res.status(201).json(tienda);
-}
 
 //actuallizarCategoria
 
 const actualizarTienda =  async (req, res = response)=> {
     const {id} = req.params;
-    let {tienda, cantidad} = req.body;
+    let {nombre} = req.body;
     nombre = nombre.toUpperCase();
 
-    const credito = await Credito.findByIdAndUpdate(id, {nombre, cantidad}, {new: true});
+    const tienda = await Tienda.findByIdAndUpdate(id, {nombre}, {new: true});
     
-res.json(credito);
+res.json(tienda);
 }
 
 //borrarTienda -estado-false
@@ -78,7 +79,7 @@ const borrarTienda =  async (req, res = response)=> {
     //Borrar físicamente
    // const tienda = await Tienda.findByIdAndDelete(id);
 
-   const credito = await Credito.findByIdAndUpdate(id, {estado:false}, {new: true});
+   const tienda = await Tienda.findByIdAndUpdate(id, {estado:false}, {new: true});
     //const usuarioAutenticado = req.usuario
     res.json(credito);
   }

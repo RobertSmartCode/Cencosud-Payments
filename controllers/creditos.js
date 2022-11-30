@@ -1,6 +1,60 @@
 const { response, request } = require("express");
 
-const Credito = require("../models");
+const {Credito, Usuario, Tienda} = require("../models");
+
+
+const crearCredito = async (req, res = response)=>{
+
+  let {correo,tienda,cantidad} = req.body;
+
+  //Verificar que el usuario esté registrado
+
+  const usuarioDB= await Usuario.findOne({correo});
+  if(!usuarioDB){
+    return res.status(400).json({
+      msg : `El usuario ${correo} no está registrado`
+  })
+  }
+  const {__v, _id, ...usuario} = usuarioDB;
+  usuario.uid = _id;
+
+  //Verificar que la tienda esté en la base de datos
+
+  let nombre= tienda
+  const tiendaDB= await Tienda.findOne({nombre});
+  if(!tiendaDB){
+    return res.status(400).json({
+      msg : `La tienda ${tienda} no está registrada en la base de datos`
+  })
+  }
+
+  tienda= tienda.toUpperCase();
+  const creditoDB= await Credito.findOne({tienda,correo});
+
+  if(creditoDB){   
+  
+       if((creditoDB.tienda === tienda) && (creditoDB.correo === correo)){
+   
+        return res.status(400).json({
+          msg : `El usuario ${correo} ya tiene registrado un crédito con la tienda ${tienda}`
+       })
+  }
+     
+  }
+//  Generar la data a guardar
+  const data ={
+      tienda,
+      cantidad,
+      correo,
+      usuario:  usuario.uid 
+  }
+
+  const credito = new Credito(data);
+  //Guardar en BD
+  await credito.save();
+
+  res.status(201).json(credito);
+}
 
 
 //obtenerTiendas - paginado -total -populate
@@ -11,8 +65,8 @@ const obtenerCreditos = async (req = request , res = response) => {
    const query = {estado:true};
    
    const [total, creditos] = await Promise.all([
-    Tienda.countDocuments(query),
-    Tienda.find(query)
+    Credito.countDocuments(query),
+    Credito.find(query)
    .populate('usuario', 'nombre') //Revisar que es populate
    .skip(Number(desde))
    .limit(Number(limite))
@@ -34,39 +88,35 @@ const obtenerCreditos = async (req = request , res = response) => {
 }
 
 
-const crearCredito = async (req, res = response)=>{
-
-    const nombre= req.body.nombre.toUpperCase();
-
-    const creditoDB= await Credito.findOne({nombre});
-
-    if(creditoDB){
-        return res.status(400).json({
-            msg : `La tienda ${creditoDB.nombre} ya existe`
-        })
-    }
-  //  Generar la data a guardar
-    const data ={
-        nombre,
-        usuario: req.body.usuarioID
-    }
-
-    const credito = new Credito(data);
-    //Guardar en BD
-    await credito.save();
-
-    res.status(201).json(credito);
-}
-
 
 //actuallizarCategoria
 
 const actualizarCredito =  async (req, res = response)=> {
-    const {id} = req.params;
-    let {nombre} = req.body;
-    nombre = nombre.toUpperCase();
 
-    const credito = await Credito.findByIdAndUpdate(id, {nombre}, {new: true});
+    let {correo, cantidad, tienda} = req.body;
+     //Verificar que el usuario esté registrado
+
+  const usuarioDB= await Usuario.findOne({correo});
+  if(!usuarioDB){
+    return res.status(400).json({
+      msg : `El usuario ${correo} no está registrado`
+  })
+  }
+  const {__v, _id, ...usuario} = usuarioDB;
+  usuario.uid = _id;
+
+   //Verificar que la tienda esté registrada
+  tienda= req.body.tienda.toUpperCase();
+  const creditoDB= await Credito.findOne({tienda});
+  if(!creditoDB){
+      return res.status(400).json({
+          msg : `El usuario ${correo} no está registrado en la tienda ${tienda}`
+      })
+  }
+  
+ cantidad = Number(cantidad)+Number(creditoDB.cantidad)
+  let {id}=creditoDB
+    const credito = await Credito.findByIdAndUpdate(id, {cantidad}, {new: true});
     
 res.json(credito);
 }
@@ -75,12 +125,33 @@ res.json(credito);
 
 const borrarCredito =  async (req, res = response)=> {
 
-    const {id}= req.params;
+  let {correo,tienda} = req.body;
 
+  //Verificar que el usuario esté registrado
+
+  const usuarioDB= await Usuario.findOne({correo});
+  if(!usuarioDB){
+    return res.status(400).json({
+      msg : `El usuario ${correo} no está registrado`
+  })
+  }
+
+  //Verificar que la tienda esté en la base de datos
+
+  let nombre= tienda
+  const tiendaDB= await Tienda.findOne({nombre});
+  if(!tiendaDB){
+    return res.status(400).json({
+      msg : `La tienda ${tienda} no está registrada en la base de datos`
+  })
+  }
+  tienda= tienda.toUpperCase();
+  const creditoDB= await Credito.findOne({tienda});
+  const {__v, _id, ...usuario}=creditoDB
     //Borrar físicamente
    // const tienda = await Tienda.findByIdAndDelete(id);
 
-    const credito = await Credito.findByIdAndUpdate(id, {estado:false}, {new: true});
+    const credito = await Credito.findByIdAndUpdate(_id, {estado:false}, {new: true});
     //const usuarioAutenticado = req.usuario
     res.json(credito);
   }

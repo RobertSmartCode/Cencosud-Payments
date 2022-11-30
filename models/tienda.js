@@ -10,17 +10,6 @@ const TiendaSchema = Schema({
         type: String,
         required: [true, 'Nombre de la tienda es Obligatorio'],
         unique : true
-    },
-    cantidad:{
-        type : Number,
-        default: 0,
-        required :true
-    },
-  
-    usuario:{
-        type : Schema.Types.ObjectId,
-        ref: 'Usuario',
-        required :true
     }
 });
 

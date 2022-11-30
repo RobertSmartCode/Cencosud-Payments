@@ -39,7 +39,7 @@ check('id', 'No es un ID válido').isMongoId(),
 
         
 //Actualizar - privado - cualquiera con token valido
-router.put('/:id',[
+router.put('/',[
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('categoria', 'No es un ID válido').isMongoId(),
     // check('id').custom(existeTiendaPorId),
@@ -48,7 +48,7 @@ router.put('/:id',[
 ], actualizarCredito);
 
     //Borrar una categoría - Admin
-router.delete('/:id', [
+router.delete('/', [
     check('id', 'No es un ID válido').isMongoId(),
     // check('id').custom(existeTiendaPorId), 
     //validarCampos 
