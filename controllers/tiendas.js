@@ -81,7 +81,7 @@ const borrarTienda =  async (req, res = response)=> {
 
    const tienda = await Tienda.findByIdAndUpdate(id, {estado:false}, {new: true});
     //const usuarioAutenticado = req.usuario
-    res.json(credito);
+    res.json(tienda);
   }
 
 

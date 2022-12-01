@@ -22,10 +22,17 @@ const usuariosGet = async (req = request, res = response) => {
   }
 
   const usuariosPost =  async (req, res = response)=> {
-
-   
     const {correo} = req.body;
-    const usuario = new Usuario({correo});
+    let usuario= await Usuario.findOne({correo});
+
+       if(usuario){   
+            return res.status(400).json({
+            msg : `El usuario ${correo} ya está registrado`
+            })
+       
+        }
+
+    usuario = new Usuario({correo});
 
     //Guardar en base de datos
 

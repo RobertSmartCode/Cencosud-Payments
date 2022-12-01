@@ -25,10 +25,10 @@ router.post('/',[
 ], crearCredito);
 
 //Obtener todas la categorías - publico
-router.get('/', obtenerCreditos);
+router.get('', obtenerCreditos);
 
 //Obtener una categorías por id - publico
-router.get('/:id', [
+router.get('/tienda', [
 check('id', 'No es un ID válido').isMongoId(),
 // check('id').custom(existeTiendaPorId ),
 //validarCampos

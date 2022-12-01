@@ -80,21 +80,9 @@ const obtenerCreditos = async (req = request , res = response) => {
 
 //obtenerCreditos - populate {}
   const obtenerCredito = async (req = request , res = response) => {
-    const {id}= req.params;
-    const credito = await Credito.findById(id)
-                                      .populate('usuario', 'nombre');
-    //const usuarioAutenticado = req.usuario
-    res.json(credito);
-}
+    let {correo,tienda} = req.body;
 
-
-
-//actuallizarCategoria
-
-const actualizarCredito =  async (req, res = response)=> {
-
-    let {correo, cantidad, tienda} = req.body;
-     //Verificar que el usuario esté registrado
+    //Verificar que el usuario esté registrado
 
   const usuarioDB= await Usuario.findOne({correo});
   if(!usuarioDB){
@@ -102,23 +90,72 @@ const actualizarCredito =  async (req, res = response)=> {
       msg : `El usuario ${correo} no está registrado`
   })
   }
-  const {__v, _id, ...usuario} = usuarioDB;
-  usuario.uid = _id;
 
-   //Verificar que la tienda esté registrada
-  tienda= req.body.tienda.toUpperCase();
-  const creditoDB= await Credito.findOne({tienda});
-  if(!creditoDB){
-      return res.status(400).json({
-          msg : `El usuario ${correo} no está registrado en la tienda ${tienda}`
-      })
+  //Verificar que la tienda esté en la base de datos
+
+  let nombre= tienda
+  const tiendaDB= await Tienda.findOne({nombre});
+  if(!tiendaDB){
+    return res.status(400).json({
+      msg : `La tienda ${tienda} no está registrada en la base de datos`
+  })
   }
+
+    const creditoDB= await Credito.findOne({tienda,correo});
   
- cantidad = Number(cantidad)+Number(creditoDB.cantidad)
-  let {id}=creditoDB
-    const credito = await Credito.findByIdAndUpdate(id, {cantidad}, {new: true});
+    if(!creditoDB){
+      return res.status(400).json({
+        msg : `El usuario ${correo} no está registrado en la tienda ${tienda}`
+    })
+      
+    }
+    res.json(`El usuario ${correo} tiene un credito de ${creditoDB.cantidad} en la tienda ${tienda}`);
+   
+}
+
+
+//actuallizarCategoria
+
+const actualizarCredito =  async (req, res = response)=> {
+
+    let {correo, cantidad, tienda} = req.body;
     
-res.json(credito);
+  //Verificar que la tienda esté en la base de datos
+
+  let nombre= tienda
+  const tiendaDB= await Tienda.findOne({nombre});
+  if(!tiendaDB){
+    return res.status(400).json({
+      msg : `La tienda ${tienda} no está registrada en la base de datos`
+  })
+  }
+
+   //Verificar que el usuario esté registrado
+  const usuarioDB= await Usuario.findOne({correo});
+  if(!usuarioDB){
+    return res.status(400).json({
+      msg : `El usuario ${correo} no está registrado`
+  })
+  }
+
+  const creditoDB= await Credito.findOne({tienda,correo});
+  
+  if(!creditoDB){
+    return res.status(400).json({
+      msg : `El usuario ${correo} no está registrado en la tienda ${tienda}`
+  })
+  }
+
+  let viejaCantidad=cantidad
+    cantidad = Number(cantidad)+Number(creditoDB.cantidad)
+   if(cantidad <0){
+    return res.status(400).json({
+      msg : `El monto a debitar de ${-(viejaCantidad)} supera al crédito de ${creditoDB.cantidad}`
+  })
+   }
+      const credito = await Credito.findByIdAndUpdate(creditoDB.id, {cantidad}, {new: true});
+    
+   res.json(credito.cantidad);
 }
 
 //borrarTienda -estado-false
@@ -145,14 +182,19 @@ const borrarCredito =  async (req, res = response)=> {
       msg : `La tienda ${tienda} no está registrada en la base de datos`
   })
   }
-  tienda= tienda.toUpperCase();
-  const creditoDB= await Credito.findOne({tienda});
-  const {__v, _id, ...usuario}=creditoDB
-    //Borrar físicamente
-   // const tienda = await Tienda.findByIdAndDelete(id);
 
-    const credito = await Credito.findByIdAndUpdate(_id, {estado:false}, {new: true});
-    //const usuarioAutenticado = req.usuario
+   //Borrar físicamente
+   // const tienda = await Tienda.findByIdAndDelete(id);
+   const creditoDB= await Credito.findOne({tienda,correo});
+  
+   if(!creditoDB){
+     return res.status(400).json({
+       msg : `El usuario ${correo} no está registrado en la tienda ${tienda}`
+   })
+   }
+
+    const credito = await Credito.findByIdAndUpdate(creditoDB._id, {estado:false}, {new: true});
+  
     res.json(credito);
   }
 
